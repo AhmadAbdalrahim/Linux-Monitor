@@ -19,18 +19,22 @@ For a public SaaS, you need a database that lives in the cloud (unlike SQLite wh
       ```
 5.  **Initialize the Database**: Run this command in your terminal:
     ```bash
-    npx prisma migrate dev --name init_production
+    npm run db:push
     ```
-    *This creates all your tables (Server, User, Metrics) in the new cloud database.*
+    *This creates all your tables in the new cloud database.*
+
+> [!TIP]
+> **Supabase Connection Pooling**: For Vercel (Serverless), use the **Transaction Mode** connection string (Port 6543) in your `DATABASE_URL` to avoid connection limits. You can find this in your Supabase Dashboard settings.
 
 ## 2. Platform Hosting (Vercel)
 Vercel is the easiest place to host a Next.js app.
 1.  **GitHub**: Upload your project to a private GitHub repository.
 2.  **Vercel Connect**: Go to [Vercel](https://vercel.com), click "Add New", and select your repository.
-3.  **Environment Variables**: During the Vercel setup, click "Environment Variables" and add these:
-    - `DATABASE_URL` (The long PostgreSQL string from Step 1).
-    - `NEXTAUTH_SECRET` (Run `openssl rand -base64 32` to generate a secure one).
-    - `NEXTAUTH_URL` (Your Vercel URL, e.g., `https://your-app.vercel.app`).
+3.  **Environment Variables**: During the Vercel setup, add these:
+    - `DATABASE_URL`: Your Supabase connection string (Port 6543 recommended).
+    - `NEXTAUTH_SECRET`: A secure random string (matching your `.env`).
+    - `NEXTAUTH_URL`: Your Vercel URL (e.g., `https://your-app.vercel.app`).
+    - `NEXT_PUBLIC_APP_URL`: Same as `NEXTAUTH_URL`.
 4.  **Deploy**: Click "Deploy". Vercel will build your app and make it public!
 
 ## 2. Environment Variables
@@ -67,8 +71,9 @@ To onboard a new Linux server globally:
 ## 6. Troubleshooting: "Failed to Login/Register" on Vercel
 If you see a red error message when trying to sign in on your Vercel URL:
 1.  **Check your Database URL**: Ensure `DATABASE_URL` in Vercel settings is a valid `postgres://` string.
-2.  **Sync the Schema**: Run `npx prisma db push` from your local terminal with the production `DATABASE_URL` in your `.env` file. This creates the tables in your cloud database.
-3.  **Redeploy**: Go to Vercel, click "Deployments", select the latest one, and click "Redeploy" to ensure the new Prisma client is generated.
+2.  **Sync the Schema**: Run `npx prisma db push` from your local terminal.
+    - **Note**: If you get a validation error about `url` not being supported, it's because of a conflict with Prisma 7 CLI. Use `npx prisma@6.19.2 db push` instead.
+3.  **Redeploy**: Go to Vercel, click "Deployments", select the latest one, and click "Redeploy".
 
 ## 7. Production Readiness Checklist
 Before going live, ensure:
