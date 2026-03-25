@@ -1,0 +1,23 @@
+
+> linux-monitor-saas@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.2.1 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 8.1s
+  Running TypeScript ...
+Failed to type check.
+
+./src/app/admin/servers/page.tsx:25:16
+Type error: Object literal may only specify known properties, and 'createdAt' does not exist in type 'ServerOrderByWithRelationInput | ServerOrderByWithRelationInput[]'.
+
+  23 |       }
+  24 |     },
+> 25 |     orderBy: { createdAt: "desc" },
+     |                ^
+  26 |   });
+  27 |
+  28 |   return (
+Next.js build worker exited with code: 1 and signal: null

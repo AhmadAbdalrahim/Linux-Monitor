@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String?
+  name          String?
+  isAdmin       Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  oauthAccounts OAuthAccount[]
+  resetTokens   ResetToken[]
+  servers       Server[]
+  sessions      Session[]
+}
+
+model OAuthAccount {
+  id         String   @id @default(uuid())
+  userId     String
+  provider   String
+  providerId String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+}
+
+model ResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Server {
+  id                    String                 @id @default(uuid())
+  name                  String
+  hostname              String
+  agentKey              String                 @unique
+  ip                    String?
+  os                    String?
+  kernel                String?
+  cpuModel              String?
+  cpuCores              Int                    @default(0)
+  memoryTotal           BigInt                 @default(0)
+  userId                String
+  createdAt             DateTime               @default(now())
+  lastSeenAt            DateTime               @default(now())
+  sortOrder             Int                    @default(0)
+  auditSnapshots        AuditSnapshot[]
+  metrics               Metric[]
+  processSnapshots      ProcessSnapshot[]
+  securitySnapshots     SecuritySnapshot[]
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceSnapshots      ServiceSnapshot[]
+  userActivitySnapshots UserActivitySnapshot[]
+}
+
+model ProcessSnapshot {
+  id        String   @id @default(uuid())
+  serverId  String
+  timestamp DateTime @default(now())
+  processes String
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+}
+
+model ServiceSnapshot {
+  id        String   @id @default(uuid())
+  serverId  String
+  timestamp DateTime @default(now())
+  services  String
+  ports     String
+  cronJobs  String
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+}
+
+model UserActivitySnapshot {
+  id             String   @id @default(uuid())
+  serverId       String
+  timestamp      DateTime @default(now())
+  isRoot         Boolean  @default(true)
+  activeSessions String
+  loginHistory   String
+  sudoEvents     String
+  sshEvents      String
+  server         Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+}
+
+model AuditSnapshot {
+  id          String   @id @default(uuid())
+  serverId    String
+  timestamp   DateTime @default(now())
+  isRoot      Boolean  @default(true)
+  auditEvents String
+  kernelMsgs  String
+  syslogLines String
+  server      Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+}
+
+model SecuritySnapshot {
+  id             String   @id @default(uuid())
+  serverId       String
+  timestamp      DateTime @default(now())
+  isRoot         Boolean  @default(true)
+  fimEvents      String
+  firewallRules  String
+  selinuxEvents  String
+  appArmorEvents String
+  server         Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+}
+
+model Metric {
+  id                String   @id @default(uuid())
+  serverId          String
+  timestamp         DateTime @default(now())
+  cpuPercent        Float    @default(0)
+  cpuPerCore        String?
+  cpuIowait         Float    @default(0)
+  cpuSteal          Float    @default(0)
+  loadAvg1          Float    @default(0)
+  loadAvg5          Float    @default(0)
+  loadAvg15         Float    @default(0)
+  memoryTotal       BigInt   @default(0)
+  memoryUsed        BigInt   @default(0)
+  memoryPercent     Float    @default(0)
+  memBuffers        BigInt   @default(0)
+  memCached         BigInt   @default(0)
+  swapTotal         BigInt   @default(0)
+  swapUsed          BigInt   @default(0)
+  swapPercent       Float    @default(0)
+  diskTotal         BigInt   @default(0)
+  diskUsed          BigInt   @default(0)
+  diskPercent       Float    @default(0)
+  diskMounts        String?
+  networkBytesSent  BigInt   @default(0)
+  networkBytesRecv  BigInt   @default(0)
+  networkInterfaces String?
+  processCount      Int      @default(0)
+  zombieCount       Int      @default(0)
+  uptimeSeconds     Float    @default(0)
+  server            Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+}
